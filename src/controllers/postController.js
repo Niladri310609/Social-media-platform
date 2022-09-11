@@ -1,5 +1,5 @@
 const postModel = require("../models/postModel")
-const {isValid,isValidRequestBody,isValidObjectId,isValidtitle,isValidesc} =  require("../validation/validation")
+const {isValid,isValidRequestBody,isValidObjectId,isValidtitle,isValidesc, isValidScripts} =  require("../validation/validation")
 const userModel = require("../models/userModel")
 
 
@@ -104,7 +104,7 @@ const likePostById = async(req,res) => {
         if (!findDeletedPost) return res.status(404).send({ status: false, message: "post not found or it is already deleted" });
         const updatinglikeCount = await postModel.findOneAndUpdate({ _id: postId }, { $inc: { likes: +1 } }, { new: true }).select({ __v: 0 })
 
-        res.status(201).send({status:true, message: "you just Like the post", data:updatinglikeCount })
+        res.status(200).send({status:true, message: "you just Like the post", data:updatinglikeCount })
         
     } catch(error){
         res.status(500).send({
@@ -136,7 +136,7 @@ const UnlikePostById = async(req,res) => {
         if (!findDeletedPost) return res.status(404).send({ status: false, message: "post not found or it is already deleted" });
         const updatinglikeCount = await postModel.findOneAndUpdate({ _id: postId }, { $inc: { likes: -1 } }, { new: true }).select({ __v: 0 })
 
-        res.status(201).send({status:true, message: "you just UnLike the post", data:updatinglikeCount })
+        res.status(200).send({status:true, message: "you just UnLike the post", data:updatinglikeCount })
         
     } catch(error){
         res.status(500).send({
@@ -145,5 +145,92 @@ const UnlikePostById = async(req,res) => {
     }
 }
 
+const writeComment = async(req,res) => {
+      try{
+           let postIdParams = req.params.postId
+           let data = req.body;
+           const {userId,Comments} = req.body;
 
-module.exports = {createPost,deletePostById,likePostById,UnlikePostById}
+           if (!isValidObjectId(postIdParams)) return res.status(400).send({ status: false, message: `${postIdParams} is not valid` })
+           if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: `${userId} is not valid` })
+
+           
+           if (!isValidRequestBody(data)) {
+               return res.status(400).send({ status: false, message: "Input Data to post a comment" })
+            }
+            if(!isValidScripts(Comments)){
+                return res.status(400).send({status:false, message: "Please write your comment in valid format"})
+            }
+            if (!isValid(Comments)) {
+                return res.status(400).send({ status: false, message: "comment is required... " })
+            }
+            let getPost = await postModel.findOne({_id:postIdParams},{isDeleted:false})
+    
+            if (!getPost) return res.status(400).send({ status: false, messgage: `${postIdParams} does not exist` })
+            else{
+              
+                 const commentAdded = await postModel.findOneAndUpdate({_id:postIdParams},{$push:{Comments:{userId:userId,commentByuser:Comments}}},{new:true});
+                      
+           res.status(200).send({ status: true, message: "Comment Succesfully added", data:commentAdded })
+                };
+
+
+      } catch(error){
+         res.status(500).send({status:false, message: error.message})
+      }
+
+}
+
+
+const getPostById = async (req, res) => {
+
+    try {
+         let postIdinParams = req.params.postId?.toString().trim()
+        
+        //============================================================================== validations for ObjectId==============================================================================
+
+
+        if (!isValidObjectId(postIdinParams)) {
+            return res.status(400).send({ status: false, message: "Invalid Post Id" })
+        }
+
+        
+        //==============================================================================after checking the deletion of the Post ==============================================================================
+        const getPostByIdPost = await postModel.findOne({ _id: postIdinParams, isDeleted: false }).select({"likes":1,"Comments":1});
+        if (!getPostByIdPost) return res.status(404).send({ status: false, message: "post not found or it is already deleted" });
+
+
+        return res.status(200).send({ status: true, message: "Post Details fetched Succesfully", data:getPostByIdPost })
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error.message });
+    }
+};
+
+const getAllposts = async(req,res) => {
+     try{
+
+        let userId = req.body.userId?.toString().trim()
+
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "Invalid Post Id" })
+        }
+
+        
+        let checkuser = await userModel.findOne({ _id: userId })
+
+        if (!checkuser) {
+            return res.status(404).send({ status: false, message: "user doesn't exist" })
+        }          
+       let allpost = await postModel.find({userId:userId}).sort( { 'timestamp': -1 } ).select({"_id":1,"Title":1,"Description":1,"Comments":1, "likes":1, "createdAt":1})
+
+       if(allpost.length===0){
+        return res.status(400).send({status:false, message: "There is no post available created by the User"})
+       }
+        return res.status(200).send({status:true,message:"All posts fetched succesfully", data: allpost})
+     } catch(error){
+        res.status(500).send({status:false, message:error.message})
+     }
+};
+
+module.exports = {createPost,deletePostById,likePostById,UnlikePostById,writeComment,getPostById,getAllposts}

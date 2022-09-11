@@ -1,4 +1,6 @@
+
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Schema.Types.ObjectId
 
 const PostSchema = new mongoose.Schema(
 
@@ -15,10 +17,16 @@ const PostSchema = new mongoose.Schema(
             max: 1000, 
             trim: true 
         },
-        Comments: {
-            type: Array,
-            default : []
-        },
+        Comments: [{
+        userId: {type:ObjectId,
+        required:true,
+        ref: "User"},
+        commentByuser:{
+            type:String,
+            trim:true,
+            required:true
+        }
+        }],
         likes : {
             type:Number,
             default : 0,

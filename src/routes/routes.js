@@ -9,7 +9,16 @@ const {
   followUser,
   unfollowUser,
 } = require("../controllers/userController");
-const { createPost,deletePostById,likePostById,UnlikePostById } = require("../controllers/postController");
+
+const {
+  createPost,
+  deletePostById,
+  likePostById,
+  UnlikePostById,
+  writeComment,
+  getPostById,
+  getAllposts
+} = require("../controllers/postController");
 
 //register User
 
@@ -34,9 +43,13 @@ router.put("/user/:userId/follow", authentication, authorization, followUser);
 //unfollow User
 
 router.put(
-  "/user/:userId/unfollow",authentication, authorization,unfollowUser);
+  "/user/:userId/unfollow",
+  authentication,
+  authorization,
+  unfollowUser
+);
 
-//=====================================================
+//===========================================================================================
 
 //Create Post
 
@@ -44,16 +57,37 @@ router.post("/posts/:userId", authentication, authorization, createPost);
 
 //Delete Post
 
-router.delete("/deleteposts/:userId",authentication, authorization,deletePostById)
+router.delete(
+  "/deleteposts/:userId",
+  authentication,
+  authorization,
+  deletePostById
+);
 
 //like the post
-router.post("/like/:userId",authentication,likePostById)
+router.post("/like/:userId", authentication, likePostById);
 
 //Unlike the post
 
-router.post("/unlike/:userId",authentication,UnlikePostById)
+router.post("/unlike/:userId", authentication, UnlikePostById);
+
+//write a comment
+
+router.post("/comments/:postId", authentication, writeComment);
+
+//get a specific post
+
+router.get("/posts/:postId",authentication,getPostById)
 
 
+//get all posts of the user
+
+router.get("/posts/allposts",authentication,getAllposts)
+
+
+
+
+//===============================================================================
 
 router.all("/*", function (req, res) {
   res
