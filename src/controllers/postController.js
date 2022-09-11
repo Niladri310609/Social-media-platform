@@ -3,7 +3,7 @@ const {isValid,isValidRequestBody,isValidObjectId,isValidtitle,isValidesc, isVal
 const userModel = require("../models/userModel")
 
 
-
+//===================================createPost========================================
 const createPost = async function(req,res){
     try{
            let data = req.body
@@ -47,6 +47,8 @@ const createPost = async function(req,res){
     }
 };
 
+
+//===================================DeletePost========================================
 const deletePostById = async (req, res) => {
 
     try {
@@ -80,6 +82,8 @@ const deletePostById = async (req, res) => {
     }
 };
 
+
+//===================================Like the post========================================
 const likePostById = async(req,res) => {
     try{
         let postId = req.body.postId?.toString().trim()
@@ -112,6 +116,9 @@ const likePostById = async(req,res) => {
         })
     }
 }
+
+
+//===================================dislike the post========================================
 const UnlikePostById = async(req,res) => {
     try{
         let postId = req.body.postId?.toString().trim()
@@ -145,6 +152,8 @@ const UnlikePostById = async(req,res) => {
     }
 }
 
+
+//===================================Comment a Post========================================
 const writeComment = async(req,res) => {
       try{
            let postIdParams = req.params.postId
@@ -182,6 +191,7 @@ const writeComment = async(req,res) => {
 }
 
 
+//===================================getPost by Id========================================
 const getPostById = async (req, res) => {
 
     try {
@@ -207,6 +217,8 @@ const getPostById = async (req, res) => {
     }
 };
 
+
+//===================================get all the post posted by one user========================================
 const getAllposts = async(req,res) => {
      try{
 
